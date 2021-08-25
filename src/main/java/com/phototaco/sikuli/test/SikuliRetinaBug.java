@@ -1,5 +1,7 @@
 package com.phototaco.sikuli.test;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileAttribute;
@@ -28,7 +30,8 @@ public class SikuliRetinaBug
         //Show all of the regions
         List<Region> textEditWindows = textEdit.getWindows();
         for (Region region: textEditWindows){
-            System.out.println(region.toStringShort());
+            boolean regionOnRetina = isRetina(region);
+            System.out.println(region.toStringShort() + ", isRetina="+regionOnRetina);
         }
 
         String imagePath = System.getProperty("user.home") + File.separator + "SikuliRetinaBug" + File.separator;
@@ -47,5 +50,24 @@ public class SikuliRetinaBug
         screenImage.save(imagePath, "Screen0");
         screenImage = Screen.getScreen(1).capture();
         screenImage.save(imagePath, "Screen1");
+    }
+
+    private static boolean isRetina(Region region) {
+        GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] screenDevices = graphicsEnvironment.getScreenDevices();
+        boolean isRetina = false;
+        for (int i=0; i<screenDevices.length; i++) {
+            GraphicsDevice screenDevice = screenDevices[i];
+            GraphicsConfiguration graphicsConfiguration = screenDevice.getDefaultConfiguration();
+            AffineTransform defaultTransform = graphicsConfiguration.getDefaultTransform();
+            System.out.println("screenDevice["+i+"].IDString: "+ screenDevice.getIDstring() + 
+                " isRetina=" + !defaultTransform.isIdentity() + 
+                ",scaleX=" + defaultTransform.getScaleX() + 
+                ",scaleY="+defaultTransform.getScaleY()+
+                ",bounds="+graphicsConfiguration.getBounds());
+            // See if the current screen has the some x-coordinate as the screen where the region is at
+            if (region.getScreen().getX() == graphicsConfiguration.getBounds().x) isRetina = !defaultTransform.isIdentity();
+        }
+        return isRetina;
     }
 }
