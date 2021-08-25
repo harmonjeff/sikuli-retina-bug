@@ -17,23 +17,27 @@ import org.sikuli.script.ScreenImage;
 public class SikuliRetinaBug 
 {
     static {
-        //Setting this property seems to make the capture and find functions using Sikuli API function correctly
+        // Setting this property seems to make the capture and find functions of Sikuli API function correctly
+        // Though if it is enabled the isRetina check at the bottom no longer functions.
         System.setProperty("sun.java2d.uiScale", "1.0");
     }
     public static void main( String[] args )
     {
         Screen.showMonitors();
+
+        // Open bring the TextEdit windows to the foreground
         App textEdit = new App("TextEdit");
         textEdit.open();
         textEdit.focus();
 
-        //Show all of the regions
+        // Get all of the open windows and check to see if they are Retina
         List<Region> textEditWindows = textEdit.getWindows();
         for (Region region: textEditWindows){
             boolean regionOnRetina = isRetina(region);
             System.out.println(region.toStringShort() + ", isRetina="+regionOnRetina);
         }
 
+        // Setup to write the captured images to the user home in the "SikuliRetinaBug" folder
         String imagePath = System.getProperty("user.home") + File.separator + "SikuliRetinaBug" + File.separator;
         File capturedImagesFile = new File(imagePath);
         if (!capturedImagesFile.exists()) {
@@ -46,12 +50,14 @@ public class SikuliRetinaBug
             }
         }
 
+        // Capture images of the whole screen
         ScreenImage screenImage = Screen.getScreen(0).capture();
         screenImage.save(imagePath, "Screen0");
         screenImage = Screen.getScreen(1).capture();
         screenImage.save(imagePath, "Screen1");
     }
 
+    // The best method I could find to test to see if the screen a region is on is a Mac Retina screen
     private static boolean isRetina(Region region) {
         GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] screenDevices = graphicsEnvironment.getScreenDevices();
