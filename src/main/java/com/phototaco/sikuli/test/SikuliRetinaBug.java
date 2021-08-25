@@ -15,6 +15,7 @@ import org.sikuli.script.ScreenImage;
 public class SikuliRetinaBug 
 {
     static {
+        //Setting this property seems to make the capture and find functions using Sikuli API function correctly
         System.setProperty("sun.java2d.uiScale", "1.0");
     }
     public static void main( String[] args )
